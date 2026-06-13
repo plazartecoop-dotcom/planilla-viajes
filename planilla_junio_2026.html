@@ -177,7 +177,10 @@ function loadFirebase() {
 </script>
 </head>
 <body>
-<div class="topbar"><h2>Planilla de Viajes 2026</h2></div>
+<div class="topbar" style="display:flex;align-items:center;justify-content:space-between">
+  <h2>Planilla de Viajes 2026</h2>
+  <button onclick="subirNube()" id="btn-nube" style="padding:4px 10px;border-radius:6px;border:1px solid #4ade80;background:#166534;color:#fff;cursor:pointer;font-size:11px;font-weight:600">☁ Subir a la nube</button>
+</div>
 <div class="nav-tabs">
   <button class="nav-tab active" onclick="showSection('grilla',this)">Grilla de viajes</button>
   <button class="nav-tab" onclick="showSection('empresas',this)">Empresas y choferes</button>
@@ -1320,16 +1323,16 @@ function cargarDesdeFirebase() {
   // Cargar viajes del año actual y luego inicializar
   db.ref('viajes/'+ANIO_ACTUAL).once('value').then(function(snap){
     if(snap.exists()){
-      viajes = snap.val();
+      viajes = decodeViajes(snap.val());
       try{localStorage.setItem('planilla_v_final',JSON.stringify(viajes));}catch(e){}
     }
     init();
   }).catch(function(){ init(); });
   
   // Escuchar cambios en tiempo real
-  db.ref('viajes/'+ANIO_ACTUAL).on('value', function(snap){
+  db.ref('viajes/a'+ANIO_ACTUAL).on('value', function(snap){
     if(snap.exists()){
-      var nuevos = snap.val();
+      var nuevos = decodeViajes(snap.val());
       // solo actualizar si hay cambios reales
       if(JSON.stringify(nuevos) !== JSON.stringify(viajes)){
         viajes = nuevos;
@@ -1378,13 +1381,25 @@ function cambiarAnio() {
   alert('Año cambiado a ' + nuevo + '. Los datos de viajes son independientes por año.');
 }
 
+function encodeKey(k){ return k.replace(/\//g,'__').replace(/\./g,'--').replace(/#/g,'~~').replace(/\$/g,'$$'); }
+function decodeKey(k){ return k.replace(/__/g,'/').replace(/--/g,'.').replace(/~~/g,'#'); }
+function encodeViajes(v){
+  var enc={};
+  for(var k in v){ enc[encodeKey(k)]=v[k]; }
+  return enc;
+}
+function decodeViajes(v){
+  var dec={};
+  for(var k in v){ dec[decodeKey(k)]=v[k]; }
+  return dec;
+}
+
 function saveViajes() {
   try{localStorage.setItem('planilla_v_final',JSON.stringify(viajes));
       localStorage.setItem('planilla_v_'+ANIO_ACTUAL,JSON.stringify(viajes));}catch(e){}
-  // guardar en Firebase
   if(FIREBASE_OK){
     try{
-      db.ref('viajes/'+ANIO_ACTUAL).set(viajes);
+      db.ref('viajes/a'+ANIO_ACTUAL).set(encodeViajes(viajes));
     }catch(e){console.log('Firebase error:',e);}
   }
 }
@@ -1404,6 +1419,29 @@ function saveNovedades() {
 }
 
 cargarDesdeFirebase();
+
+function subirNube(){
+  var btn=document.getElementById('btn-nube');
+  if(!FIREBASE_OK){
+    alert('Sin conexión a internet. Abrí la planilla desde:\nhttps://plazartecoop-dotcom.github.io/planilla-viajes/planilla_junio_2026.html');
+    return;
+  }
+  btn.textContent='Subiendo...';
+  btn.disabled=true;
+  var enc=encodeViajes(viajes);
+  var p1=db.ref('viajes/a'+ANIO_ACTUAL).set(enc);
+  var p2=db.ref('empresas').set(empresas);
+  var p3=db.ref('novedades').set(novedades);
+  Promise.all([p1,p2,p3]).then(function(){
+    btn.textContent='✓ Subido!';
+    btn.style.background='#15803d';
+    setTimeout(function(){btn.textContent='☁ Subir a la nube';btn.disabled=false;},3000);
+  }).catch(function(e){
+    btn.textContent='☁ Subir a la nube';
+    btn.disabled=false;
+    alert('Error al subir: '+e.message);
+  });
+}
 </script>
 </body>
 </html>
