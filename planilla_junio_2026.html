@@ -265,7 +265,7 @@ function loadFirebase() {
     <div class="btn-group" id="m-ch-btns"></div>
     <input type="text" class="form-input" id="m-chofer-libre" placeholder="Escribir nombre del chofer">
     <div class="form-label">Destino</div>
-    <input type="text" class="form-input" id="m-destino" placeholder="Ej: T ARROYOS">
+    <input type="text" class="form-input" id="m-destino" placeholder="Ej: T ARROYOS" onblur="autocompletarMPNuevo()">
     <div class="form-label">Mat. Prima</div>
     <input type="text" class="form-input" id="m-materia" placeholder="Ej: P AFRE">
     <div class="modal-btns">
@@ -644,9 +644,6 @@ function toggleLila(k, ri) { viajes[k][ri].lila=!viajes[k][ri].lila; saveViajes(
 function eliminarViaje(k, ri) { if(!confirm('Eliminar este viaje?'))return; viajes[k].splice(ri,1); saveViajes(); renderGrilla(); }
 
 function startEdit(el, k, ri, campo) {
-  if(campo==='c') { abrirSelectorChofer(k,ri); return; }
-  if(campo==='dest') { abrirSelectorDest(k,ri); return; }
-  if(campo==='mp') { abrirSelectorMP(k,ri); return; }
   if (el.querySelector('input')) return;
   var val = viajes[k][ri][campo] || '';
   el.innerHTML = '<input class="edit-input-inline" value="'+val+'">';
@@ -655,6 +652,21 @@ function startEdit(el, k, ri, campo) {
   inp.onblur = function() {
     var val=inp.value.toUpperCase();
     viajes[k][ri][campo]=val;
+    // si editó el chofer, autocompletar empresa
+    if(campo==='c' && val){
+      for(var ii=0;ii<empresas.length;ii++){
+        for(var jj=0;jj<empresas[ii].choferes.length;jj++){
+          if(empresas[ii].choferes[jj].short===val){
+            viajes[k][ri]['emp']=empresas[ii].nombre;
+            break;
+          }
+        }
+      }
+    }
+    // si editó el destino, autocompletar materia prima si hay mapeo conocido
+    if(campo==='dest' && val && DESTINOS_MP[val] && !viajes[k][ri]['mp']){
+      viajes[k][ri]['mp']=DESTINOS_MP[val];
+    }
     saveViajes(); renderGrilla();
   };
   inp.onkeydown = function(e) { if(e.key==='Enter') inp.blur(); };
@@ -789,6 +801,13 @@ function imprimirDias() {
 // ═══════════════════════════════════════════════════════
 // MODAL VIAJE
 // ═══════════════════════════════════════════════════════
+function autocompletarMPNuevo() {
+  var dest=document.getElementById('m-destino').value.trim().toUpperCase();
+  var mpInput=document.getElementById('m-materia');
+  if(dest && DESTINOS_MP[dest] && !mpInput.value.trim()){
+    mpInput.value=DESTINOS_MP[dest];
+  }
+}
 function abrirModalViaje(k) {
   modalDayKey=k; selEmp=''; selChofer='';
   document.getElementById('modal-day-lbl').textContent=k.split('/')[0];
