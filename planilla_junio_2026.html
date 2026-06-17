@@ -443,6 +443,22 @@ var NOV_DEFAULT = [
 // ESTADO
 // ═══════════════════════════════════════════════════════
 var ANIO_ACTUAL = parseInt(localStorage.getItem('anio_actual')||'2026');
+
+// Destinos y MP con vinculación automática
+var DESTINOS_MP = {'SAN JERONIMO': 'GIRASOL', 'MADERO': 'GIRASOL', 'MN NAVAS': 'P AFRE', 'SM NAVAS': 'P AFRE', 'T ARROYOS': 'P AFRE', 'MOLCA': 'P AFRE', 'MORIXE': 'P AFRE', 'PILAR': 'P AFRE', 'PRIMOLIENDAS': 'MOLIDO', 'BALATON': 'MOLIDO', 'AYACUCHO': 'MOLIDO', 'JUNIN': 'H SOJA', 'BAHER': 'CONCHILLA', 'EUROTECH': 'MICROINGREDIENTES', 'TESTER': 'MICROINGREDIENTES', 'PORFENC': 'MICROINGREDIENTES', 'TECNOENGORDE': 'MELAZA', 'RADAR': 'EXP SOJA', 'TANCACHA': '', 'CASTELLI': '', 'BELGRANO': ''};
+var DESTINOS_LISTA = ['AYACUCHO', 'BAHER', 'BALATON', 'BELGRANO', 'CASTELLI', 'EUROTECH', 'JUNIN', 'MADERO', 'MN NAVAS', 'MOLCA', 'MORIXE', 'PILAR', 'PORFENC', 'PRIMOLIENDAS', 'RADAR', 'SAN JERONIMO', 'SM NAVAS', 'T ARROYOS', 'TANCACHA', 'TECNOENGORDE', 'TESTER'];
+var MP_LISTA = ['CONCHILLA', 'EXP SOJA', 'GIRASOL', 'H SOJA', 'MELAZA', 'MICROINGREDIENTES', 'MOLIDO', 'P AFRE', 'P SOJA', 'POPURRI'];
+
+function loadDestinos(){
+  try{var d=localStorage.getItem('destinos_custom');if(d){var custom=JSON.parse(d);custom.forEach(function(c){if(!DESTINOS_MP.hasOwnProperty(c.dest))DESTINOS_LISTA.push(c.dest);DESTINOS_MP[c.dest]=c.mp;});}} catch(e){}
+}
+function saveDestinos(){
+  try{
+    var custom=[];
+    DESTINOS_LISTA.forEach(function(d){if(!['SAN JERONIMO','MADERO','MN NAVAS','SM NAVAS','T ARROYOS','MOLCA','MORIXE','PILAR','PRIMOLIENDAS','BALATON','AYACUCHO','JUNIN','BAHER','EUROTECH','TESTER','PORFENC','TECNOENGORDE','RADAR','TANCACHA','CASTELLI','BELGRANO'].includes(d))custom.push({dest:d,mp:DESTINOS_MP[d]||''});});
+    localStorage.setItem('destinos_custom',JSON.stringify(custom));
+  }catch(e){}
+}
 var viajes = {};
 var empresas = [];
 var novedades = [];
@@ -569,8 +585,8 @@ function init() {
     var dias=getDias(MESES[i]);
     for(var j=0;j<dias.length;j++){var k=dkey(dias[j]);if(!viajes[k])viajes[k]=DR_JUN[k]?JSON.parse(JSON.stringify(DR_JUN[k])):[];}
   }
-  saveViajes();
   // poblar select bitácora
+  loadDestinos();
   var sel = document.getElementById('bit-chofer');
   for (var i=0;i<empresas.length;i++){
     for(var j=0;j<empresas[i].choferes.length;j++){
@@ -628,6 +644,9 @@ function toggleLila(k, ri) { viajes[k][ri].lila=!viajes[k][ri].lila; saveViajes(
 function eliminarViaje(k, ri) { if(!confirm('Eliminar este viaje?'))return; viajes[k].splice(ri,1); saveViajes(); renderGrilla(); }
 
 function startEdit(el, k, ri, campo) {
+  if(campo==='c') { abrirSelectorChofer(k,ri); return; }
+  if(campo==='dest') { abrirSelectorDest(k,ri); return; }
+  if(campo==='mp') { abrirSelectorMP(k,ri); return; }
   if (el.querySelector('input')) return;
   var val = viajes[k][ri][campo] || '';
   el.innerHTML = '<input class="edit-input-inline" value="'+val+'">';
@@ -636,17 +655,6 @@ function startEdit(el, k, ri, campo) {
   inp.onblur = function() {
     var val=inp.value.toUpperCase();
     viajes[k][ri][campo]=val;
-    // si editó el chofer, autocompletar empresa
-    if(campo==='c' && val){
-      for(var ii=0;ii<empresas.length;ii++){
-        for(var jj=0;jj<empresas[ii].choferes.length;jj++){
-          if(empresas[ii].choferes[jj].short===val){
-            viajes[k][ri]['emp']=empresas[ii].nombre;
-            break;
-          }
-        }
-      }
-    }
     saveViajes(); renderGrilla();
   };
   inp.onkeydown = function(e) { if(e.key==='Enter') inp.blur(); };
@@ -1321,7 +1329,7 @@ function cargarDesdeFirebase() {
   });
   
   // Cargar viajes del año actual y luego inicializar
-  db.ref('viajes/'+ANIO_ACTUAL).once('value').then(function(snap){
+  db.ref('viajes/a'+ANIO_ACTUAL).once('value').then(function(snap){
     if(snap.exists()){
       viajes = decodeViajes(snap.val());
       try{localStorage.setItem('planilla_v_final',JSON.stringify(viajes));}catch(e){}
@@ -1329,32 +1337,6 @@ function cargarDesdeFirebase() {
     init();
   }).catch(function(){ init(); });
   
-  // Escuchar cambios en tiempo real
-  db.ref('viajes/a'+ANIO_ACTUAL).on('value', function(snap){
-    if(snap.exists()){
-      var nuevos = decodeViajes(snap.val());
-      // solo actualizar si hay cambios reales
-      if(JSON.stringify(nuevos) !== JSON.stringify(viajes)){
-        viajes = nuevos;
-        try{localStorage.setItem('planilla_v_final',JSON.stringify(viajes));}catch(e){}
-        renderGrilla();
-      }
-    }
-  });
-  
-  db.ref('novedades').on('value', function(snap){
-    if(snap.exists()){
-      novedades = snap.val();
-      try{localStorage.setItem('bitacora_v1',JSON.stringify(novedades));}catch(e){}
-    }
-  });
-  
-  db.ref('empresas').on('value', function(snap){
-    if(snap.exists()){
-      empresas = snap.val();
-      try{localStorage.setItem('planilla_e_final',JSON.stringify(empresas));}catch(e){}
-    }
-  });
   }); // fin loadFirebase
 }
 
