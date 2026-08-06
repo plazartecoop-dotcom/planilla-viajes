@@ -212,6 +212,7 @@ function loadFirebase() {
 
 <!-- ESTADÍSTICAS -->
 <div id="sec-stats" class="section">
+  <div id="stats-month-tabs" style="display:flex;flex-wrap:wrap;gap:4px;padding:0.5rem 1rem 0;"></div>
   <div class="stats-print-bar" id="stats-print-bar">
     <span style="font-size:11px;color:#666;font-weight:500">Seleccionar:</span>
     <button id="sbtn-todos" onclick="toggleStatsSel('todos')" style="padding:3px 10px;border-radius:6px;border:1px solid #ccc;background:#f5f5f5;cursor:pointer;font-size:11px">Todos</button>
@@ -1053,10 +1054,33 @@ var ESTILOS = {
   'TODOS':{titulo:'linear-gradient(90deg,#4C1D95,#7C3AED)',barra:'#7C3AED',num:'#4C1D95'}
 };
 
+var activeStatsMes = MES_ACTUAL;
+
+function renderStatsMonthTabs() {
+  var container = document.getElementById('stats-month-tabs');
+  if (!container) return;
+  var html = '<span style="font-size:11px;color:#666;font-weight:500;margin-right:4px">Mes:</span>';
+  html += '<button onclick="switchStatsMes(null)" style="padding:2px 8px;border-radius:6px;border:1px solid '+(activeStatsMes===null?'#222':'#ccc')+';background:'+(activeStatsMes===null?'#222':'#f5f5f5')+';color:'+(activeStatsMes===null?'#fff':'#333')+';cursor:pointer;font-size:10px;font-weight:600">Todos</button>';
+  for (var i=0; i<MESES.length; i++) {
+    var m = MESES[i];
+    var isActive = activeStatsMes === m.key;
+    var isCurrent = m.key === MES_ACTUAL;
+    html += '<button onclick="switchStatsMes(\''+m.key+'\')" style="padding:2px 8px;border-radius:6px;border:1px solid '+(isActive?'#222':isCurrent?'#16A34A':'#ccc')+';background:'+(isActive?'#222':isCurrent?'#16A34A':'#f5f5f5')+';color:'+(isActive||isCurrent?'#fff':'#333')+';cursor:pointer;font-size:10px">'+m.label+'</button>';
+  }
+  container.innerHTML = html;
+}
+
+function switchStatsMes(key) {
+  activeStatsMes = key;
+  renderStatsMonthTabs();
+  renderStats();
+}
+
 function renderStats() {
+  renderStatsMonthTabs();
   var orden=['N SCHUK','CENTENO','PLAZA','CANO'];
   var allT=[];
-  for(var i=0;i<orden.length;i++){var emp=getEmpresa(orden[i]);if(emp)for(var j=0;j<emp.choferes.length;j++){var c=contarViajes(emp.choferes[j].short);var tot=0;for(var mk in c)tot+=c[mk];allT.push(tot);}}
+  for(var i=0;i<orden.length;i++){var emp=getEmpresa(orden[i]);if(emp)for(var j=0;j<emp.choferes.length;j++){var c=contarViajes(emp.choferes[j].short);var tot=0;for(var mk in (activeStatsMes?{[activeStatsMes]:c[activeStatsMes]}:c))tot+=c[mk]||0;allT.push(tot);}}
   var maxAll=Math.max.apply(null,[1].concat(allT));
   var html='';
 
@@ -1071,9 +1095,9 @@ function renderStats() {
     for(var ci=0;ci<emp.choferes.length;ci++){
       var ch=emp.choferes[ci];
       var c=contarViajes(ch.short);
-      var tot=0; for(var mk in c)tot+=c[mk];
+      var tot=0; if(activeStatsMes){tot=c[activeStatsMes]||0;}else{for(var mk in c)tot+=c[mk];}
       var bw=tot>0?Math.round((tot/maxAll)*180)+4:0;
-      var dpm=dpMes(ch.short,MES_ACTUAL);
+      var dpm=dpMes(ch.short,activeStatsMes||MES_ACTUAL);
       var dpa=dpAnual(ch.short);
       var dpmStr=dpm>0?'-'+dpm:'0'; var dpaStr=dpa>0?'-'+dpa:'0';
       var dpmCol=dpm>0?'#DC2626':'#27500A'; var dpaCol=dpa>0?'#DC2626':'#27500A';
