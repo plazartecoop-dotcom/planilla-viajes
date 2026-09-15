@@ -346,7 +346,10 @@ var MESES = [
   {key:'nov26',label:'N',nombre:'Noviembre',dias:30,inicio:6},
   {key:'dic26',label:'D',nombre:'Diciembre',dias:31,inicio:1}
 ];
-var MES_ACTUAL = 'jun26';
+var _hoy = new Date();
+var _sufijo = String(_hoy.getFullYear()).slice(2);
+var _prefijos = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+var MES_ACTUAL = _prefijos[_hoy.getMonth()] + _sufijo;
 var DN = ['Lunes','Martes','Miercoles','Jueves','Viernes','Sabado','Domingo'];
 
 var EMP_DEFAULT = [
@@ -462,7 +465,7 @@ function saveDestinos(){
 var viajes = {};
 var empresas = [];
 var novedades = [];
-var activeMes = 'jun26';
+var activeMes = MES_ACTUAL;
 var bitMes = 'todos';
 var diasSel = [];
 var editEmpIdx = null;
