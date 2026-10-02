@@ -960,6 +960,81 @@ function copiarInfo() {
 var COLORES_EMP = {
   'N SCHUK':'#1D4ED8','CENTENO':'#B45309','PLAZA':'#065F46','CANO':'#991B1B','MOSCATTI':'#555'
 };
+
+function renderEmpresas() {
+  var html='';
+  for(var i=0;i<empresas.length;i++){
+    var emp=empresas[i];
+    var empColor=COLORES_EMP[emp.nombre]||'#555';
+    html+='<div class="emp-card" style="border-top:3px solid '+empColor+'"><div class="emp-card-header"><div>';
+    html+='<div class="emp-name" style="color:'+empColor+'">'+emp.nombre+'</div>';
+    html+='<div class="emp-cuit">CUIT: '+(emp.cuit||'—')+'</div></div>';
+    html+='<button class="edit-btn" onclick="abrirEditEmpresa('+i+')">Editar</button></div>';
+    html+='<div class="ch-table-head"><div>Nombre completo</div><div style="text-align:center">Chasis</div><div style="text-align:center">Acoplado</div></div>';
+    for(var j=0;j<emp.choferes.length;j++){
+      var ch=emp.choferes[j];
+      html+='<div class="chofer-row"><div><div class="chofer-name">'+ch.nombre+'</div><div class="chofer-sub">'+(ch.cuil||'—')+'</div></div>';
+      html+='<div class="chofer-pat">'+(ch.chasis||'—')+'</div>';
+      html+='<div class="chofer-pat">'+(ch.acoplado||'—')+'</div></div>';
+    }
+    html+='<button onclick="agregarChofer('+i+')" style="margin-top:8px;padding:3px 10px;border-radius:6px;border:1px solid '+empColor+';background:#fff;color:'+empColor+';cursor:pointer;font-size:11px;font-weight:600">+ Agregar chofer</button>';
+    html+='</div>';
+  }
+  document.getElementById('emp-list').innerHTML=html;
+}
+
+function agregarChofer(ei) {
+  var emp=empresas[ei];
+  var nombre=prompt('Nombre completo del chofer:');
+  if(!nombre||!nombre.trim()) return;
+  var short=prompt('Nombre corto (como aparece en las tarjetas):');
+  if(!short||!short.trim()) return;
+  var chasis=prompt('Chasis (patente):') || '';
+  var acoplado=prompt('Acoplado (patente):') || '';
+  var cuil=prompt('CUIL:') || '';
+  emp.choferes.push({
+    nombre:nombre.trim().toUpperCase(),
+    short:short.trim().toUpperCase(),
+    chasis:chasis.trim().toUpperCase(),
+    acoplado:acoplado.trim().toUpperCase(),
+    cuil:cuil.trim()
+  });
+  saveEmpresas();
+  renderEmpresas();
+}
+
+function abrirEditEmpresa(ei) {
+  editEmpIdx=ei; var emp=empresas[ei];
+  document.getElementById('edit-emp-titulo').textContent='Editar: '+emp.nombre;
+  document.getElementById('edit-cuit').value=emp.cuit||'';
+  var rows='';
+  for(var i=0;i<emp.choferes.length;i++){
+    rows+='<div class="edit-row">';
+    rows+='<input type="text" id="en_'+i+'" value="'+emp.choferes[i].nombre+'">';
+    rows+='<input type="text" id="ec_'+i+'" value="'+emp.choferes[i].chasis+'">';
+    rows+='<input type="text" id="ea_'+i+'" value="'+emp.choferes[i].acoplado+'">';
+    rows+='<input type="text" id="eu_'+i+'" value="'+emp.choferes[i].cuil+'">';
+    rows+='</div>';
+  }
+  document.getElementById('edit-rows').innerHTML=rows;
+  document.getElementById('modal-empresa').classList.add('open');
+}
+
+function guardarEmpresa() {
+  if(editEmpIdx===null) return;
+  var emp=empresas[editEmpIdx];
+  emp.cuit=document.getElementById('edit-cuit').value;
+  for(var i=0;i<emp.choferes.length;i++){
+    emp.choferes[i].nombre=document.getElementById('en_'+i).value;
+    emp.choferes[i].chasis=document.getElementById('ec_'+i).value;
+    emp.choferes[i].acoplado=document.getElementById('ea_'+i).value;
+    emp.choferes[i].cuil=document.getElementById('eu_'+i).value;
+  }
+  saveEmpresas();
+  document.getElementById('modal-empresa').classList.remove('open');
+  renderEmpresas();
+}
+
 var statsMesActivo = MES_ACTUAL;
 var statsChoferActivo = 'todos';
 
