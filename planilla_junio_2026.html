@@ -88,14 +88,26 @@ body{font-family:Arial,sans-serif;color:#222;font-size:12px;background:#f5f5f3}
 .stats-mes-btn.active{background:#222;color:#fff;border-color:#222}
 .stats-ch-btn{padding:3px 10px;border-radius:14px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:11px;color:#666}
 .stats-ch-btn.active{background:#222;color:#fff;border-color:#222}
-.stats-sabana-emp td{padding:4px 10px;font-size:10px;font-weight:700;color:#fff}
-.stats-sabana-row td{padding:5px 10px;border-bottom:0.5px solid #eee;font-size:11px;vertical-align:top}
-.stats-viaje-item{display:grid;grid-template-columns:46px 110px 1fr;gap:4px;align-items:baseline;margin-bottom:2px}
-.stats-viaje-dia{font-size:10px;color:#aaa;white-space:nowrap}
-.stats-viaje-dest{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stats-viaje-mp{font-size:10px;color:#888;white-space:nowrap}
-.stats-parado-item{display:grid;grid-template-columns:90px 1fr;gap:4px;align-items:baseline;margin-bottom:2px}
-.stats-parado-fecha{color:#DC2626;font-size:10px;white-space:nowrap}
+.stats-emp-label{font-size:10px;font-weight:700;color:#fff;padding:3px 10px;border-radius:14px;margin-bottom:8px;display:inline-block}
+.stats-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px;margin-bottom:14px}
+.stats-card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:10px 12px;cursor:pointer;transition:border-color .15s}
+.stats-card:hover{border-color:#aaa}
+.stats-card-name{font-size:12px;font-weight:500;color:#222}
+.stats-card-full{font-size:10px;color:#888;margin-bottom:8px}
+.stats-card-nums{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.stats-card-num{font-size:20px;font-weight:500}
+.stats-card-lbl{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;display:block}
+.stats-card-dp{font-size:14px;font-weight:500;color:#DC2626}
+.stats-card-dp.ok{color:#27500A}
+.stats-card-sep{width:1px;height:24px;background:#eee}
+.stats-card-link{font-size:10px;color:#7C3AED;text-decoration:underline}
+.stats-det-row{display:grid;grid-template-columns:48px 1fr 80px;gap:4px;padding:4px 0;border-bottom:0.5px solid #f0f0f0;font-size:11px;align-items:baseline}
+.stats-det-dia{font-size:10px;color:#aaa}
+.stats-det-dest{font-weight:600}
+.stats-det-emp{font-size:10px;color:#888;text-align:right}
+.stats-det-mp{font-size:10px;color:#888}
+.stats-par-row{padding:5px 0;border-bottom:0.5px solid #f0f0f0;font-size:11px}
+.stats-par-fecha{color:#DC2626;font-size:10px}
 .emp-list{padding:0.75rem 1rem 1rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
 .emp-card{background:#fff;border:1px solid #ddd;border-radius:10px;padding:1rem}
 .emp-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -228,7 +240,7 @@ function loadFirebase() {
     <button onclick="statsCompartirWSP()" style="padding:4px 12px;border-radius:6px;border:none;background:#25D366;color:#fff;cursor:pointer;font-size:11px;font-weight:600">📱 Copiar para WhatsApp</button>
     <button onclick="statsEnviarMail()" style="padding:4px 12px;border-radius:6px;border:none;background:#0072C6;color:#fff;cursor:pointer;font-size:11px;font-weight:600">📧 Enviar por mail</button>
     <button onclick="statsImprimir()" style="padding:4px 12px;border-radius:6px;border:none;background:#222;color:#fff;cursor:pointer;font-size:11px;font-weight:600">🖶 Imprimir</button>
-    <span id="stats-ok-msg" style="font-size:11px;color:#27500A;font-weight:600;display:none">¡Copiado! Pegalo en WhatsApp</span>
+    <span id="stats-ok-msg" style="font-size:11px;color:#27500A;font-weight:600;display:none">¡Copiado!</span>
   </div>
   <div style="padding:0.4rem 1rem 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:#fafaf8">
     <span style="font-size:11px;color:#666;font-weight:500">Mes:</span>
@@ -246,24 +258,24 @@ function loadFirebase() {
     <button class="stats-mes-btn" onclick="switchStatsMes(this,'dic26')">Dic</button>
     <button class="stats-mes-btn" onclick="switchStatsMes(this,'anual')" style="background:#EDE9FE;color:#4C1D95;border-color:#C4B5FD">Anual</button>
   </div>
-  <div style="padding:0.3rem 1rem 0.4rem;display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:#fafaf8">
-    <span style="font-size:11px;color:#666;font-weight:500">Chofer:</span>
-    <button class="stats-ch-btn active" onclick="switchStatsChofer(this,'todos')">Todos</button>
-    <span id="stats-ch-btns"></span>
+  <div style="padding:0.3rem 1rem 0.5rem;background:#fafaf8;border-bottom:1px solid #eee">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:11px;color:#666;font-weight:500">Chofer:</span>
+      <button class="stats-ch-btn active" onclick="switchStatsChofer(this,'todos')">Todos</button>
+      <span id="stats-ch-btns"></span>
+    </div>
   </div>
-  <div style="overflow-x:auto;padding:0 1rem 1rem">
-    <table id="stats-sabana" style="width:100%;border-collapse:collapse;margin-top:8px;min-width:600px">
-      <thead>
-        <tr>
-          <th style="background:#f0f0f0;padding:6px 10px;font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid #ddd;text-align:left;width:100px">Chofer</th>
-          <th style="background:#f0f0f0;padding:6px 10px;font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid #ddd;text-align:left">Viajes</th>
-          <th style="background:#f0f0f0;padding:6px 10px;font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid #ddd;text-align:left;width:220px">Días parados</th>
-          <th style="background:#f0f0f0;padding:6px 10px;font-size:10px;font-weight:700;color:#666;text-transform:uppercase;border-bottom:2px solid #ddd;text-align:center;width:38px">V</th>
-          <th style="background:#f0f0f0;padding:6px 10px;font-size:10px;font-weight:700;color:#666;text-transform:uppercase;border-bottom:2px solid #ddd;text-align:center;width:38px">DP</th>
-        </tr>
-      </thead>
-      <tbody id="stats-tbody"></tbody>
-    </table>
+  <div style="padding:0.75rem 1rem 1rem" id="stats-cards-wrap"></div>
+  <!-- Modal detalle chofer -->
+  <div id="stats-modal-bg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);align-items:flex-start;justify-content:center;padding-top:40px;z-index:200">
+    <div style="background:#fff;border-radius:12px;border:1px solid #ddd;width:360px;max-width:95vw;max-height:80vh;overflow-y:auto;padding:14px">
+      <div style="font-size:13px;font-weight:500;margin-bottom:10px" id="stats-mod-titulo"></div>
+      <div id="stats-mod-contenido"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+        <button onclick="statsDetalleCopiar()" style="padding:4px 12px;border-radius:6px;border:1px solid #C4B5FD;background:#EDE9FE;color:#4C1D95;cursor:pointer;font-size:11px">Copiar</button>
+        <button onclick="document.getElementById('stats-modal-bg').style.display='none'" style="padding:4px 12px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:11px">Cerrar</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -608,6 +620,53 @@ function contarViajes(short) {
     res[MESES[i].key]=c;
   }
   return res;
+}
+
+function getViajesEnMes(short, mesKey){
+  var lista=[];
+  var mes=getMes(mesKey); if(!mes) return lista;
+  var dias=getDias(mes);
+  for(var j=0;j<dias.length;j++){
+    var k=dkey(dias[j]);
+    var rows=viajes[k]||[];
+    for(var r=0;r<rows.length;r++){
+      if(rows[r].c===short&&!rows[r].lila) lista.push({d:dias[j].d.substring(0,3)+' '+dias[j].n, dest:rows[r].dest||'', mp:rows[r].mp||'', choferReal:rows[r].c, empReal:rows[r].emp});
+    }
+  }
+  return lista;
+}
+function getViajesAnual(short){
+  var lista=[];
+  for(var i=0;i<MESES.length;i++){
+    var dias=getDias(MESES[i]);
+    for(var j=0;j<dias.length;j++){
+      var k=dkey(dias[j]);
+      var rows=viajes[k]||[];
+      for(var r=0;r<rows.length;r++){
+        if(rows[r].c===short&&!rows[r].lila) lista.push({d:MESES[i].nombre.substring(0,3)+' '+dias[j].n, dest:rows[r].dest||'', mp:rows[r].mp||'', choferReal:rows[r].c, empReal:rows[r].emp});
+      }
+    }
+  }
+  return lista;
+}
+function getParadosEnMes(short, mesKey){
+  var lista=[];
+  for(var i=0;i<novedades.length;i++){
+    var n=novedades[i];
+    if(n.chofer!==short) continue;
+    var d=diasEnMes(n.inicio,n.fin,mesKey);
+    if(d>0) lista.push({f:fmtFecha(n.inicio),h:fmtFecha(n.fin),dias:d,tipo:n.tipo,obs:n.obs});
+  }
+  return lista;
+}
+function getParadosAnual(short){
+  var lista=[];
+  for(var i=0;i<novedades.length;i++){
+    if(novedades[i].chofer!==short) continue;
+    var n=novedades[i];
+    lista.push({f:fmtFecha(n.inicio),h:fmtFecha(n.fin),dias:diasEntreFechas(n.inicio,n.fin),tipo:n.tipo,obs:n.obs});
+  }
+  return lista;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1052,126 +1111,120 @@ function switchStatsChofer(btn, ch) {
 }
 
 function renderStats() {
+  var html='';
+  for(var i=0;i<empresas.length;i++){
+    var emp=empresas[i];
+    var ec=COLORES_EMP[emp.nombre]||'#555';
+    var chs=emp.choferes.filter(function(c){return statsChoferActivo==='todos'||c.short===statsChoferActivo;});
+    if(!chs.length) continue;
+    html+='<span class="stats-emp-label" style="background:'+ec+'">'+emp.nombre+'</span>';
+    html+='<div class="stats-cards-grid">';
+    for(var j=0;j<chs.length;j++){
+      var ch=chs[j];
+      var vl=statsMesActivo==='anual'?getViajesAnual(ch.short):getViajesEnMes(ch.short,statsMesActivo);
+      var pl=statsMesActivo==='anual'?getParadosAnual(ch.short):getParadosEnMes(ch.short,statsMesActivo);
+      var totalDP=0; for(var k=0;k<pl.length;k++) totalDP+=pl[k].dias;
+      var totalV=vl.length;
+      html+='<div class="stats-card" onclick="statsAbrirDetalle(\''+ch.short+'\',\''+emp.nombre+'\')">';
+      html+='<div class="stats-card-name">'+ch.short+'</div>';
+      html+='<div class="stats-card-full">'+ch.nombre+'</div>';
+      html+='<div class="stats-card-nums">';
+      html+='<div><span class="stats-card-lbl">Viajes</span><span class="stats-card-num" style="color:'+ec+'">'+totalV+'</span></div>';
+      html+='<div class="stats-card-sep"></div>';
+      html+='<div><span class="stats-card-lbl">DP</span><span class="stats-card-dp '+(totalDP>0?'':'ok')+'">'+(totalDP>0?'-'+totalDP:'0')+'</span></div>';
+      html+='</div>';
+      html+='<span class="stats-card-link">ver detalle ▾</span>';
+      html+='</div>';
+    }
+    html+='</div>';
+  }
+  document.getElementById('stats-cards-wrap').innerHTML=html||'<div style="color:#aaa;font-size:11px;padding:12px">Sin datos para mostrar</div>';
   // poblar botones de chofer
-  var html = '';
+  var chHtml='';
   for(var i=0;i<empresas.length;i++){
     var emp=empresas[i]; var ec=COLORES_EMP[emp.nombre]||'#555';
     for(var j=0;j<emp.choferes.length;j++){
       var ch=emp.choferes[j];
-      html+='<button class="stats-ch-btn" style="border-color:'+ec+';color:'+ec+'" onclick="switchStatsChofer(this,\''+ch.short+'\')">' +ch.short+'</button> ';
+      chHtml+='<button class="stats-ch-btn" style="border-color:'+ec+';color:'+ec+'" onclick="switchStatsChofer(this,\''+ch.short+'\')">'+ch.short+'</button> ';
     }
   }
-  document.getElementById('stats-ch-btns').innerHTML=html;
-  // marcar mes actual
-  var btns=document.querySelectorAll('.stats-mes-btn');
-  btns.forEach(function(b){
+  document.getElementById('stats-ch-btns').innerHTML=chHtml;
+  // marcar mes activo
+  document.querySelectorAll('.stats-mes-btn').forEach(function(b){
     b.classList.remove('active');
-    if(b.textContent.trim()===getMesLabel(MES_ACTUAL)) b.classList.add('active');
+    if(b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf(statsMesActivo)>=0) b.classList.add('active');
   });
-  renderStatsSabana();
 }
 
-function getMesLabel(key){
-  var m=getMes(key); return m?m.nombre.substring(0,3):'';
-}
-
-function getViajesEnMes(short, mesKey){
-  var lista=[];
-  var mes=getMes(mesKey); if(!mes) return lista;
-  var dias=getDias(mes);
-  for(var j=0;j<dias.length;j++){
-    var k=dkey(dias[j]);
-    var rows=viajes[k]||[];
-    for(var r=0;r<rows.length;r++){
-      if(rows[r].c===short) lista.push({d:dias[j].d.substring(0,3)+' '+dias[j].n, dest:rows[r].dest, mp:rows[r].mp, oc:rows[r].oc, lila:rows[r].lila});
-    }
-  }
-  return lista;
-}
-
-function getViajesAnual(short){
-  var lista=[];
-  for(var i=0;i<MESES.length;i++){
-    var dias=getDias(MESES[i]);
-    for(var j=0;j<dias.length;j++){
-      var k=dkey(dias[j]);
-      var rows=viajes[k]||[];
-      for(var r=0;r<rows.length;r++){
-        if(rows[r].c===short) lista.push({d:MESES[i].nombre.substring(0,3)+' '+dias[j].n, dest:rows[r].dest, mp:rows[r].mp});
-      }
-    }
-  }
-  return lista;
-}
-
-function getParadosEnMes(short, mesKey){
-  var lista=[];
-  for(var i=0;i<novedades.length;i++){
-    var n=novedades[i];
-    if(n.chofer!==short) continue;
-    var d=diasEnMes(n.inicio,n.fin,mesKey);
-    if(d>0) lista.push({f:fmtFecha(n.inicio),h:fmtFecha(n.fin),dias:d,tipo:n.tipo,obs:n.obs});
-  }
-  return lista;
-}
-
-function getParadosAnual(short){
-  var lista=[];
-  for(var i=0;i<novedades.length;i++){
-    if(novedades[i].chofer!==short) continue;
-    var n=novedades[i];
-    lista.push({f:fmtFecha(n.inicio),h:fmtFecha(n.fin),dias:diasEntreFechas(n.inicio,n.fin),tipo:n.tipo,obs:n.obs});
-  }
-  return lista;
-}
-
-function renderStatsSabana() {
-  var tbody=document.getElementById('stats-tbody');
-  if(!tbody) return;
-  var html='';
-  var tipoLabel2={mecanica:'Mec',personal:'Per',salud:'Sal',vacaciones:'Vac',otro:'Otro'};
-  var tipoClass2={mecanica:'tipo-mecánica',personal:'tipo-personal',salud:'tipo-salud'};
+var statsDetalleActual=null;
+function statsAbrirDetalle(short, empNombre) {
+  var ch=null, empColor='#555';
   for(var i=0;i<empresas.length;i++){
-    var emp=empresas[i];
-    var empColor=COLORES_EMP[emp.nombre]||'#555';
-    var chs=emp.choferes.filter(function(c){return statsChoferActivo==='todos'||c.short===statsChoferActivo;});
-    if(!chs.length) continue;
-    html+='<tr class="stats-sabana-emp"><td colspan="5" style="background:'+empColor+';padding:4px 10px;font-size:10px;font-weight:700;color:#fff;letter-spacing:.5px">'+emp.nombre+'</td></tr>';
-    for(var j=0;j<chs.length;j++){
-      var ch=chs[j];
-      var viajesList = statsMesActivo==='anual'?getViajesAnual(ch.short):getViajesEnMes(ch.short,statsMesActivo);
-      var paradosList = statsMesActivo==='anual'?getParadosAnual(ch.short):getParadosEnMes(ch.short,statsMesActivo);
-      var totalV=viajesList.length;
-      var totalDP=0; for(var k=0;k<paradosList.length;k++) totalDP+=paradosList[k].dias;
-
-      var vHtml='';
-      for(var vi=0;vi<viajesList.length;vi++){
-        var v=viajesList[vi];
-        vHtml+='<div class="stats-viaje-item"><span class="stats-viaje-dia">'+v.d+'</span><span class="stats-viaje-dest" style="color:'+empColor+'">'+v.dest+'</span>&nbsp;<span class="stats-viaje-mp">'+v.mp+'</span></div>';
-      }
-      if(!vHtml) vHtml='<span style="color:#aaa;font-size:10px">Sin viajes</span>';
-
-      var pHtml='';
-      for(var pi=0;pi<paradosList.length;pi++){
-        var p=paradosList[pi];
-        pHtml+='<div class="stats-parado-item"><span class="stats-parado-fecha">'+p.f+' ('+p.dias+'d) </span>';
-        if(p.tipo) pHtml+='<span class="tipo-badge '+(tipoClass2[p.tipo]||'')+'">'+tipoLabel2[p.tipo]+'</span>';
-        pHtml+='<span style="color:#791F1F;font-size:11px">'+p.obs+'</span></div>';
-      }
-      if(!pHtml) pHtml='<span style="color:#aaa;font-size:10px">Sin novedades</span>';
-
-      html+='<tr class="stats-sabana-row">';
-      html+='<td style="padding:5px 10px;border-bottom:0.5px solid #eee;vertical-align:top"><div style="font-weight:500;font-size:12px">'+ch.short+'</div><div style="font-size:10px;color:#888">'+ch.nombre+'</div></td>';
-      html+='<td style="padding:5px 10px;border-bottom:0.5px solid #eee;vertical-align:top">'+vHtml+'</td>';
-      html+='<td style="padding:5px 10px;border-bottom:0.5px solid #eee;vertical-align:top">'+pHtml+'</td>';
-      html+='<td style="padding:5px 10px;border-bottom:0.5px solid #eee;text-align:center;vertical-align:top"><span style="font-size:16px;font-weight:700;color:'+empColor+'">'+totalV+'</span></td>';
-      html+='<td style="padding:5px 10px;border-bottom:0.5px solid #eee;text-align:center;vertical-align:top">'+(totalDP>0?'<span style="font-size:13px;font-weight:700;color:#DC2626">-'+totalDP+'</span>':'<span style="font-size:13px;font-weight:700;color:#27500A">0</span>')+'</td>';
-      html+='</tr>';
-    }
+    if(empresas[i].nombre===empNombre){ empColor=COLORES_EMP[empNombre]||'#555'; for(var j=0;j<empresas[i].choferes.length;j++){if(empresas[i].choferes[j].short===short){ch=empresas[i].choferes[j];break;}}}
   }
-  if(!html) html='<tr><td colspan="5" style="text-align:center;padding:20px;color:#aaa">Sin datos para mostrar</td></tr>';
-  tbody.innerHTML=html;
+  var mes=getMes(statsMesActivo);
+  var mesLabel=mes?mes.nombre:'Anual';
+  document.getElementById('stats-mod-titulo').textContent=(ch?ch.nombre:short)+' — '+empNombre+' — '+mesLabel;
+  var vl=statsMesActivo==='anual'?getViajesAnual(short):getViajesEnMes(short,statsMesActivo);
+  var pl=statsMesActivo==='anual'?getParadosAnual(short):getParadosEnMes(short,statsMesActivo);
+  var tipoLabel2={mecanica:'Mecánica',personal:'Personal',salud:'Salud',vacaciones:'Vacaciones',otro:'Otro'};
+  var tipoClass2={mecanica:'tipo-mecánica',personal:'tipo-personal',salud:'tipo-salud'};
+  var html='';
+  // viajes
+  html+='<div style="font-size:10px;font-weight:700;color:#666;text-transform:uppercase;margin-bottom:4px">Viajes</div>';
+  if(vl.length){
+    for(var vi=0;vi<vl.length;vi++){
+      var v=vl[vi];
+      var choferLabel=v.choferReal||short;
+      var empLabel=v.empReal||empNombre;
+      html+='<div class="stats-det-row">';
+      html+='<span class="stats-det-dia">'+v.d+'</span>';
+      html+='<div><span class="stats-det-dest" style="color:'+empColor+'">'+v.dest+'</span><br><span class="stats-det-mp">'+v.mp+'</span></div>';
+      // mostrar empresa y nombre si es distinto del chofer habitual
+      var extra='';
+      if(choferLabel!==short||empLabel!==empNombre) extra=' <span style="font-size:9px;color:#888">('+empLabel+' / '+choferLabel+')</span>';
+      html+='<span class="stats-det-emp">'+extra+'</span>';
+      html+='</div>';
+    }
+    html+='<div style="text-align:right;padding:5px 0;font-size:11px;font-weight:500;color:'+empColor+'">Total: '+vl.length+' viajes</div>';
+  } else {
+    html+='<div style="color:#aaa;font-size:11px;padding:6px 0">Sin viajes en este período</div>';
+  }
+  // dias parados
+  html+='<div style="font-size:10px;font-weight:700;color:#666;text-transform:uppercase;margin:8px 0 4px">Días parados</div>';
+  if(pl.length){
+    var totalDP=0; for(var pi=0;pi<pl.length;pi++) totalDP+=pl[pi].dias;
+    for(var pi=0;pi<pl.length;pi++){
+      var p=pl[pi];
+      html+='<div class="stats-par-row"><span class="stats-par-fecha">'+p.f+' ('+p.dias+'d) </span>';
+      if(p.tipo) html+='<span class="tipo-badge '+(tipoClass2[p.tipo]||'')+'">'+tipoLabel2[p.tipo]+'</span> ';
+      html+='<span style="font-size:11px;color:#791F1F">'+p.obs+'</span></div>';
+    }
+    html+='<div style="text-align:right;padding:5px 0;font-size:11px;font-weight:500;color:#DC2626">Total parado: '+totalDP+' días</div>';
+  } else {
+    html+='<div style="color:#aaa;font-size:11px;padding:4px 0">Sin días parados</div>';
+  }
+  document.getElementById('stats-mod-contenido').innerHTML=html;
+  statsDetalleActual={short:short,empNombre:empNombre,ch:ch};
+  document.getElementById('stats-modal-bg').style.display='flex';
 }
+
+function statsDetalleCopiar(){
+  if(!statsDetalleActual) return;
+  var short=statsDetalleActual.short; var ch=statsDetalleActual.ch;
+  var mes=getMes(statsMesActivo); var mesLabel=mes?mes.nombre:'Anual';
+  var vl=statsMesActivo==='anual'?getViajesAnual(short):getViajesEnMes(short,statsMesActivo);
+  var pl=statsMesActivo==='anual'?getParadosAnual(short):getParadosEnMes(short,statsMesActivo);
+  var txt=(ch?ch.nombre:short)+' — '+statsDetalleActual.empNombre+'\n'+mesLabel+'\n\nVIAJES\n';
+  if(vl.length) for(var vi=0;vi<vl.length;vi++) txt+=vl[vi].d+' › '+vl[vi].dest+' '+vl[vi].mp+'\n';
+  else txt+='Sin viajes\n';
+  var totalDP=0; for(var pi=0;pi<pl.length;pi++) totalDP+=pl[pi].dias;
+  txt+='\nDÍAS PARADOS\n';
+  if(pl.length) for(var pi=0;pi<pl.length;pi++) txt+=pl[pi].f+' ('+pl[pi].dias+'d) '+pl[pi].obs+'\n';
+  else txt+='Sin novedades\n';
+  navigator.clipboard.writeText(txt).then(function(){document.getElementById('stats-modal-bg').style.display='none';});
+}
+
 
 function statsGenerarTexto(){
   var mes=getMes(statsMesActivo);
